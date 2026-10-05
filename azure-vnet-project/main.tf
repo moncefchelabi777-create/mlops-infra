@@ -54,6 +54,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   location            = azurerm_resource_group.rg.location
   size                = "Standard_D2s_v3" # 2 CPU, 8 Go de RAM — Idéal pour Docker !
   admin_username      = "moncefadmin"
+  user_data = filebase64("${path.module}/docker-setup.sh")
   network_interface_ids = [
     azurerm_network_interface.nic.id,
   ]
