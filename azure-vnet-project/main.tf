@@ -55,6 +55,10 @@ resource "azurerm_linux_virtual_machine" "vm" {
   size                = "Standard_D2s_v3" # 2 CPU, 8 Go de RAM — Idéal pour Docker !
   admin_username      = "moncefadmin"
   user_data = filebase64("${path.module}/docker-setup.sh")
+# LIGNE DU JOUR 6 : Création du badge d'identité automatique pour la VM !
+  identity {
+    type = "SystemAssigned"
+  }
   network_interface_ids = [
     azurerm_network_interface.nic.id,
   ]
@@ -102,5 +106,26 @@ resource "azurerm_network_security_group" "nsg" {
 resource "azurerm_network_interface_security_group_association" "nsg_assoc" {
   network_interface_id      = azurerm_network_interface.nic.id
   network_security_group_id = azurerm_network_security_group.nsg.id
+}
+
+# 9. Le Storage Account (Le Data Lake Azure)
+resource "azurerm_storage_account" "datalake" {
+  name                     = "stmlopsprodvienna2026" # ATTENTION : Le nom doit être unique au monde, en minuscules, sans espace ni tiret !
+  resource_group_name      = azurerm_resource_group.rg.name
+  location                 = azurerm_resource_group.rg.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS" # Local Redundant Storage (Économique, dupliqué 3 fois dans le même centre)
+
+  tags = {
+    environment = "production"
+    owner       = "moncef"
+  }
+}
+
+# 10. Le Container (Le tiroir à l'intérieur du coffre pour les datasets d'IA)
+resource "azurerm_storage_container" "datasets" {
+  name                  = "raw-datasets"
+  storage_account_name  = azurerm_storage_account.datalake.name
+  container_access_type = "private" # Ultra-sécurisé : Personne sur internet ne peut voir tes données d'IA
 }
 
