@@ -1,0 +1,31 @@
+name: MLOps CI Pipeline
+
+# 1. Déclencheur : Le robot s'allume à CHAQUE push sur la branche "main"
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    # 2. L'environnement : Le robot loue une machine Ubuntu vierge dans le cloud de GitHub
+    runs-on: ubuntu-latest
+
+    steps:
+    # Étape A : Le robot télécharge le code de ton dépôt GitHub sur sa machine de test
+    - name: Check out repository code
+      uses: actions/checkout@v3
+
+    # Étape B : Le robot configure l'environnement Python officiel
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python_version: '3.9'
+
+    # Étape C : La validation magique — Le robot teste la recette de ton Dockerfile !
+    - name: Build Docker Image Test
+      run: |
+        cd src
+        docker build -t mlops-ai-app:test .
+
